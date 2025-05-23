@@ -4,30 +4,51 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Settings, ArrowLeft, ChevronDown, X, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Product, SearchResultItem } from "@/types/product"; // Import the Product and SearchResultItem interfaces
 
 const SearchResults = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const query = new URLSearchParams(location.search).get("q") || "";
   
+  const [products, setProducts] = useState<SearchResultItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState("Relevance");
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]); // Change to string[] for product._id
   
-  // Mock product data
-  const products = [
-    { id: 1, title: "Casual T-Shirt", price: "$29.99", image: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop" },
-    { id: 2, title: "Denim Jacket", price: "$89.99", image: "https://images.unsplash.com/photo-1611312449408-fcece27cdbb7?w=800&auto=format&fit=crop" },
-    { id: 3, title: "Summer Dress", price: "$49.99", image: "https://images.unsplash.com/photo-1612336307429-8a898d10e223?w=800&auto=format&fit=crop" },
-    { id: 4, title: "Leather Boots", price: "$119.99", image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop" },
-    { id: 5, title: "Winter Coat", price: "$159.99", image: "https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?w=800&auto=format&fit=crop" },
-    { id: 6, title: "Casual Sneakers", price: "$69.99", image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&auto=format&fit=crop" }
-  ];
+  useEffect(() => {
+    const fetchSearchResults = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/search?query=${encodeURIComponent(query)}&k=10&limit=10&offset=0`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data: SearchResultItem[] = await response.json();
+        setProducts(data);
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (query) {
+      fetchSearchResults();
+    } else {
+      setProducts([]);
+      setLoading(false);
+    }
+  }, [query]);
 
   const sortOptions = ["Relevance", "Price: Low to High", "Price: High to Low", "Newest"];
 
-  const toggleFavorite = (id: number) => {
+  const toggleFavorite = (id: string) => { // Change id type to string
     setFavorites(prev => 
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
@@ -136,42 +157,55 @@ const SearchResults = () => {
         </div>
       )}
       
+      {/* Loading, Error, or No Results */}
+      {loading && (
+        <div className="text-center text-white p-8">Loading search results...</div>
+      )}
+      {error && (
+        <div className="text-center text-red-500 p-8">Error: {error}</div>
+      )}
+      {!loading && !error && products.length === 0 && (
+        <div className="text-center text-white p-8">No results found for "{query}".</div>
+      )}
+
       {/* Product Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-        {products.map((product) => (
-          <div 
-            key={product.id}
-            className="bg-[#1C2436] rounded-xl overflow-hidden cursor-pointer group transition-all duration-200 hover:translate-y-[-4px] hover:shadow-lg"
-            onClick={() => navigate(`/product/${product.id}`)}
-          >
-            <div className="relative">
-              <img 
-                src={product.image} 
-                alt={product.title}
-                className="w-full aspect-[16/9] object-cover"
-              />
-              <button 
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-[#131A2B]/70 flex items-center justify-center"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleFavorite(product.id);
-                }}
-              >
-                <Heart 
-                  className={`w-4 h-4 ${favorites.includes(product.id) ? 'text-neon-magenta fill-neon-magenta' : 'text-white'}`} 
+      {!loading && !error && products.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+          {products.map((product) => (
+            <div 
+              key={product.product._id}
+              className="bg-[#1C2436] rounded-xl overflow-hidden cursor-pointer group transition-all duration-200 hover:translate-y-[-4px] hover:shadow-lg"
+              onClick={() => navigate(`/product/${product.product._id}`)}
+            >
+              <div className="relative">
+                <img 
+                  src={product.product.main_image_url} 
+                  alt={product.product.product_name_display}
+                  className="w-full aspect-[16/9] object-cover"
                 />
-              </button>
-              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <span className="text-white font-inter font-semibold text-sm">View Details</span>
+                <button 
+                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-[#131A2B]/70 flex items-center justify-center"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFavorite(product.product._id);
+                  }}
+                >
+                  <Heart 
+                    className={`w-4 h-4 ${favorites.includes(product.product._id) ? 'text-neon-magenta fill-neon-magenta' : 'text-white'}`} 
+                  />
+                </button>
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                  <span className="text-white font-inter font-semibold text-sm">View Details</span>
+                </div>
+              </div>
+              <div className="p-3 h-16">
+                <h3 className="font-poppins font-semibold text-base text-white truncate">{product.product.product_name_display}</h3>
+                <p className="text-neon-aqua font-inter font-semibold text-sm">Rs. {product.metadata.price}</p>
               </div>
             </div>
-            <div className="p-3 h-16">
-              <h3 className="font-poppins font-semibold text-base text-white truncate">{product.title}</h3>
-              <p className="text-neon-aqua font-inter font-semibold text-sm">{product.price}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

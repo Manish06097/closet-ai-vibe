@@ -1,49 +1,66 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Separator } from "@/components/ui/separator";
+import { Product } from "@/types/product"; // Import the Product interface
 
 const ProductDetail = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [selectedSize, setSelectedSize] = useState("");
   const [showSizeSelector, setShowSizeSelector] = useState(false);
-  
-  // Mock product data - in a real app this would be fetched from an API
-  const product = {
-    id,
-    name: "Premium Cotton T-Shirt",
-    price: "$39.99",
-    images: [
-      "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&auto=format&fit=crop"
-    ],
-    description: "This premium cotton t-shirt features a relaxed fit and soft-touch fabric. Perfect for everyday wear, it's both comfortable and stylish.",
-    sizes: ["XS", "S", "M", "L", "XL"],
-    sizeGuide: "Regular fit. Select your usual size.",
-    materials: "100% Organic Cotton",
-    care: "Machine wash cold, tumble dry low",
-    reviews: [
-      { user: "Alex", rating: 5, comment: "Fantastic quality and fit!" },
-      { user: "Jordan", rating: 4, comment: "Great shirt, slightly big." }
-    ]
-  };
 
-  // Mock related products for "Complete the look" section
-  const relatedProducts = [
-    { id: 101, name: "Slim Jeans", price: "$49.99", image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&auto=format&fit=crop" },
-    { id: 102, name: "Canvas Shoes", price: "$59.99", image: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=400&auto=format&fit=crop" },
-    { id: 103, name: "Casual Watch", price: "$79.99", image: "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=400&auto=format&fit=crop" },
-  ];
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/products/${id}`); // Changed API endpoint
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data: Product = await response.json(); // Expect a single Product object
+        setProduct(data);
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProductDetails();
+    }
+  }, [id]);
+
+  // Mock related products for "Complete the look" section (can be replaced with real data later)
+
 
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
   };
+
+  if (loading) {
+    return <div className="min-h-screen bg-gradient-dark text-white text-center p-8">Loading product details...</div>;
+  }
+
+  if (error) {
+    return <div className="min-h-screen bg-gradient-dark text-red-500 text-center p-8">Error: {error}</div>;
+  }
+
+  if (!product) {
+    return <div className="min-h-screen bg-gradient-dark text-white text-center p-8">Product data incomplete or not found.</div>;
+  }
+
+  // Determine price to display
+  const displayPrice = product.offers_schema?.[0]?.price || "N/A";
 
   return (
     <div className="min-h-screen bg-gradient-dark pb-20 mb-16">
@@ -51,12 +68,12 @@ const ProductDetail = () => {
       <div className="relative">
         <Carousel>
           <CarouselContent>
-            {product.images.map((image, index) => (
+            {product.image_variants?.map((image, index) => ( // Removed .product
               <CarouselItem key={index} className="w-full">
                 <div className="aspect-[16/9] w-full">
                   <img 
-                    src={image} 
-                    alt={`${product.name} - view ${index + 1}`}
+                    src={image.url || "/placeholder.svg"} 
+                    alt={`${product.product_name_display} - view ${index + 1}`} // Removed .product
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -64,7 +81,7 @@ const ProductDetail = () => {
             ))}
           </CarouselContent>
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-            {product.images.map((_, index) => (
+            {product.image_variants?.map((_, index) => ( // Removed .product
               <div 
                 key={index} 
                 className="w-2 h-2 rounded-full bg-white/50 cursor-pointer"
@@ -95,8 +112,8 @@ const ProductDetail = () => {
 
       {/* Product info */}
       <div className="p-4">
-        <h1 className="font-poppins font-bold text-2xl text-white mb-2">{product.name}</h1>
-        <p className="font-poppins font-semibold text-xl text-neon-magenta">{product.price}</p>
+        <h1 className="font-poppins font-bold text-2xl text-white mb-2">{product.product_name_display}</h1> {/* Removed .product */}
+        <p className="font-poppins font-semibold text-xl text-neon-magenta">Rs. {displayPrice}</p> {/* Used displayPrice */}
         
         {/* CTA buttons */}
         <div className="flex space-x-3 mt-6">
@@ -138,79 +155,60 @@ const ProductDetail = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="description" className="mt-4 text-white font-inter">
-              <p>{product.description}</p>
-              <div className="mt-4">
-                <p className="mb-2"><strong>Material:</strong> {product.materials}</p>
-                <p><strong>Care:</strong> {product.care}</p>
+              <p className="mb-4 text-base leading-relaxed">{product.description_schema}</p>
+              <div className="space-y-4">
+                {product.description_and_fit?.details && 
+                  Object.entries(product.description_and_fit.details).map(([key, value]) => (
+                    <div key={key}>
+                      <div className="flex justify-between items-center py-2">
+                        <span className="font-semibold text-white text-lg capitalize">{key.replace(/_/g, ' ')}</span>
+                        <span className="text-white/80 text-base">{Array.isArray(value) ? value.join(', ') : value}</span>
+                      </div>
+                      <Separator className="bg-[#2A3245]" />
+                    </div>
+                  ))
+                }
               </div>
             </TabsContent>
             <TabsContent value="sizing" className="mt-4 text-white font-inter">
-              <p className="mb-3">{product.sizeGuide}</p>
+              <p className="mb-3">{product.description_and_fit?.general_description}</p> {/* Removed .product */}
               <div className="flex flex-wrap gap-2">
-                {product.sizes.map((size) => (
+                {product.sizes_display?.map((sizeObj) => ( // Removed .product
                   <div 
-                    key={size} 
+                    key={sizeObj.size} 
                     className="flex items-center space-x-2"
                   >
-                    <div className={`w-2 h-2 rounded-full ${size === 'M' ? 'bg-yellow-500' : 'bg-green-500'}`}></div>
-                    <span>{size}</span>
+                    <div className={`w-2 h-2 rounded-full ${sizeObj.availability_text === 'Few pieces left' ? 'bg-yellow-500' : sizeObj.availability_text === 'Out of stock' ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                    <span>{sizeObj.size} ({sizeObj.availability_text})</span>
                   </div>
                 ))}
               </div>
               <p className="mt-4 text-sm text-white/70">
                 <span className="inline-block mr-3"><span className="w-2 h-2 rounded-full bg-green-500 inline-block mr-1"></span> In Stock</span>
                 <span className="inline-block"><span className="w-2 h-2 rounded-full bg-yellow-500 inline-block mr-1"></span> Low Stock</span>
+                <span className="inline-block ml-3"><span className="w-2 h-2 rounded-full bg-red-500 inline-block mr-1"></span> Out of Stock</span>
               </p>
             </TabsContent>
             <TabsContent value="reviews" className="mt-4 text-white font-inter">
               <div className="flex items-center mb-4">
                 <div className="flex">
-                  {"★★★★☆".split("").map((star, i) => (
+                  {"★".repeat(Math.floor(product.aggregate_rating_schema?.rating_value || 0)).split("").map((star, i) => ( // Removed .product
+                    <span key={i} className="text-neon-orange text-lg">{star}</span>
+                  ))}
+                  {"☆".repeat(5 - Math.floor(product.aggregate_rating_schema?.rating_value || 0)).split("").map((star, i) => ( // Removed .product
                     <span key={i} className="text-neon-orange text-lg">{star}</span>
                   ))}
                 </div>
-                <span className="ml-2">4.5 (2 reviews)</span>
+                <span className="ml-2">{product.aggregate_rating_schema?.rating_value || 0} ({product.aggregate_rating_schema?.review_count || 0} reviews)</span> {/* Removed .product */}
               </div>
-              {product.reviews.map((review, index) => (
-                <div key={index} className="border-t border-[#2A3245] py-3">
-                  <div className="flex justify-between">
-                    <span className="font-semibold">{review.user}</span>
-                    <div className="flex">
-                      {"★".repeat(review.rating).split("").map((star, i) => (
-                        <span key={i} className="text-neon-orange text-sm">{star}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <p className="mt-1 text-white/80">{review.comment}</p>
-                </div>
-              ))}
+              {/* No actual reviews data in the provided JSON, so keeping mock or empty */}
+              <p className="mt-1 text-white/80">No reviews available for this product.</p>
             </TabsContent>
           </Tabs>
         </div>
         
-        {/* Complete the look */}
-        <div className="mt-8">
-          <h2 className="font-poppins font-semibold text-xl text-white mb-4">Complete The Look</h2>
-          <div className="flex space-x-3 overflow-x-auto pb-2">
-            {relatedProducts.map((item) => (
-              <div 
-                key={item.id} 
-                className="flex-shrink-0 w-[100px] cursor-pointer"
-                onClick={() => navigate(`/product/${item.id}`)}
-              >
-                <div className="w-[100px] h-[140px] bg-[#1C2436] rounded-xl overflow-hidden mb-2">
-                  <img 
-                    src={item.image} 
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <h3 className="font-inter font-medium text-white text-sm truncate">{item.name}</h3>
-                <p className="font-inter text-neon-aqua text-xs">{item.price}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+       
+       
       </div>
       
       {/* Sticky shop bar */}
@@ -219,18 +217,18 @@ const ProductDetail = () => {
           <div className="absolute top-0 left-0 w-full transform -translate-y-full bg-[#1C2436] border-t border-[#2A3245] p-4">
             <h3 className="font-inter font-medium text-white mb-3">Select Size</h3>
             <div className="flex flex-wrap gap-2">
-              {product.sizes.map((size) => (
+              {product.sizes_display?.map((sizeObj) => ( // Removed .product
                 <Button
-                  key={size}
+                  key={sizeObj.size}
                   variant="outline"
                   className={`w-12 h-12 rounded-md font-inter ${
-                    selectedSize === size 
+                    selectedSize === sizeObj.size 
                       ? 'bg-neon-aqua text-white border-none' 
                       : 'border-[#2A3245] text-white hover:bg-[#2A3245]'
                   }`}
-                  onClick={() => setSelectedSize(size)}
+                  onClick={() => setSelectedSize(sizeObj.size)}
                 >
-                  {size}
+                  {sizeObj.size}
                 </Button>
               ))}
             </div>
@@ -238,7 +236,7 @@ const ProductDetail = () => {
         )}
         
         <div className="font-inter font-semibold text-base text-white">
-          {product.price}
+          Rs. {displayPrice}
         </div>
         <Button
           className="bg-neon-aqua hover:bg-neon-aqua/90 text-white font-inter font-semibold rounded-full h-10 px-6 transition-all duration-150 hover:shadow-lg active:scale-95"

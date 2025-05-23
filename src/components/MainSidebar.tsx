@@ -1,8 +1,7 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { X, Home, ShoppingBag, Search, Calendar, TrendingUp, User, Settings, HelpCircle, LogOut, Bot, Briefcase } from "lucide-react";
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -10,11 +9,12 @@ import {
   SidebarHeader, 
   SidebarMenu, 
   SidebarMenuItem, 
-  SidebarMenuButton, 
-  SidebarSeparator, 
+  SidebarMenuButton,
+  SidebarSeparator,
   SidebarGroup,
   SidebarGroupLabel
 } from "@/components/ui/sidebar";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 
 interface MainSidebarProps {
   open: boolean;
@@ -147,15 +147,15 @@ const MainSidebar = ({ open, onClose, isMobile }: MainSidebarProps) => {
     );
   }
   
-  // For desktop, we use Sidebar component
+  // For desktop, we use our custom sidebar styling
   return (
-    <Sidebar 
+    <div 
       className={`${open ? 'translate-x-0' : '-translate-x-full'} fixed top-0 left-0 w-[280px] md:w-[240px] h-screen transition-transform duration-300 ease-in-out bg-[#131A2B] shadow-lg z-[1000] flex flex-col`}
       data-state={open ? "open" : "closed"}
       role="navigation"
       aria-label="Main menu"
     >
-      <SidebarHeader className="flex items-center justify-between h-16 px-4 border-b border-[#2A3245]">
+      <div className="flex items-center justify-between h-16 px-4 border-b border-[#2A3245]">
         <div className="flex items-center">
           <div className="w-8 h-8 mr-2 bg-gradient-to-r from-neon-orange to-neon-magenta rounded-md" />
           <span className="text-gradient font-poppins font-bold text-xl">VibeFit</span>
@@ -167,7 +167,7 @@ const MainSidebar = ({ open, onClose, isMobile }: MainSidebarProps) => {
         >
           <X size={24} />
         </button>
-      </SidebarHeader>
+      </div>
       
       {/* User Profile Preview */}
       <div className="flex items-center h-16 px-4 border-b border-[#2A3245]">
@@ -177,40 +177,36 @@ const MainSidebar = ({ open, onClose, isMobile }: MainSidebarProps) => {
         <span className="ml-3 font-inter font-semibold text-white">Alex Johnson</span>
       </div>
       
-      <SidebarContent className="overflow-y-auto pt-4">
-        <SidebarGroup aria-label="Main Navigation">
-          <SidebarMenu className="px-4 flex flex-col gap-3">
+      <div className="overflow-y-auto pt-4 flex-1">
+        <div className="px-4">
+          <SidebarMenu className="flex flex-col gap-3">
             {renderMenuItems(mainNavItems)}
           </SidebarMenu>
-        </SidebarGroup>
+        </div>
         
-        <SidebarSeparator className="my-4 bg-[#2A3245]" />
+        <div className="h-px bg-[#2A3245] my-4 mx-4" />
         
-        <SidebarGroup aria-label="AI Assistants">
-          <SidebarGroupLabel className="px-4 text-[#888E99] font-inter font-semibold text-xs uppercase mb-2">
-            AI Assistants
-          </SidebarGroupLabel>
-          <SidebarMenu className="px-4 flex flex-col gap-3">
+        <div className="px-4">
+          <h3 className="text-[#888E99] font-inter font-semibold text-xs uppercase mb-2">AI Assistants</h3>
+          <SidebarMenu className="flex flex-col gap-3">
             {renderMenuItems(aiAssistantItems)}
           </SidebarMenu>
-        </SidebarGroup>
+        </div>
         
-        <SidebarSeparator className="my-4 bg-[#2A3245]" />
+        <div className="h-px bg-[#2A3245] my-4 mx-4" />
         
-        <SidebarGroup aria-label="Account & Settings">
-          <SidebarGroupLabel className="px-4 text-[#888E99] font-inter font-semibold text-xs uppercase mb-2">
-            Account & Settings
-          </SidebarGroupLabel>
-          <SidebarMenu className="px-4 flex flex-col gap-3">
+        <div className="px-4">
+          <h3 className="text-[#888E99] font-inter font-semibold text-xs uppercase mb-2">Account & Settings</h3>
+          <SidebarMenu className="flex flex-col gap-3">
             {renderMenuItems(accountItems)}
           </SidebarMenu>
-        </SidebarGroup>
-      </SidebarContent>
+        </div>
+      </div>
       
-      <SidebarFooter className="mt-auto py-3 text-center border-t border-[#2A3245]">
+      <div className="mt-auto py-3 text-center border-t border-[#2A3245]">
         <span className="text-[#555C6A] text-xs font-inter">v1.0.0</span>
-      </SidebarFooter>
-    </Sidebar>
+      </div>
+    </div>
   );
 };
 

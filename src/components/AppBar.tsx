@@ -4,6 +4,8 @@ import { ArrowLeft, Menu, Search, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface AppBarProps {
   currentStep?: number;
@@ -13,6 +15,7 @@ interface AppBarProps {
   showSearch?: boolean;
   showMenu?: boolean;
   showProfile?: boolean;
+  variant?: "default" | "search"; // Added variant for search-focused mode
 }
 
 const AppBar = ({ 
@@ -22,9 +25,11 @@ const AppBar = ({
   onBack,
   showSearch = false,
   showMenu = false,
-  showProfile = false 
+  showProfile = false,
+  variant = "default"
 }: AppBarProps) => {
   const navigate = useNavigate();
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleBack = () => {
     if (onBack) {
@@ -34,8 +39,15 @@ const AppBar = ({
     }
   };
 
+  const handleSearchFocus = () => {
+    setIsFocused(true);
+    if (variant === "default") {
+      navigate("/search");
+    }
+  };
+
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-[#131A2B] shadow-md">
+    <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-[#131A2B] shadow-md h-[56px]">
       {/* Left Side */}
       <div className="flex items-center space-x-4">
         {showBack && (
@@ -69,11 +81,16 @@ const AppBar = ({
 
       {/* Middle - Search Bar */}
       {showSearch && (
-        <div className="relative flex-grow max-w-lg mx-4">
+        <div className="relative flex-grow max-w-lg mx-4 md:max-w-[60%]">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
           <Input
             placeholder="Search your style..."
-            className="pl-10 pr-12 bg-[#1C2436] border-transparent h-10 rounded-full text-white placeholder:text-gray-400 focus:border-neon-aqua focus:ring focus:ring-neon-aqua/30"
+            className={cn(
+              "pl-10 pr-12 bg-[#1C2436] border-transparent h-10 rounded-full text-white placeholder:text-gray-400",
+              isFocused ? "border-2 border-neon-aqua shadow-[0_0_8px_rgba(0,229,255,0.5)]" : ""
+            )}
+            onFocus={handleSearchFocus}
+            onBlur={() => setIsFocused(false)}
           />
           <Button 
             variant="ghost" 
@@ -88,7 +105,7 @@ const AppBar = ({
       {/* Right Side */}
       {showProfile && (
         <div className="flex items-center">
-          <Avatar className="h-10 w-10 border-2 border-transparent hover:border-neon-aqua transition-colors">
+          <Avatar className="h-10 w-10 border-2 border-transparent hover:border-neon-aqua transition-colors focus:ring-2 focus:ring-neon-aqua">
             <AvatarFallback className="bg-neon-magenta/20 text-white">
               AL
             </AvatarFallback>

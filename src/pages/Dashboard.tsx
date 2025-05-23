@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Search, Mic, Plus, Calendar, TrendingUp, Shirt } from "lucide-react";
 import AppBar from "@/components/AppBar";
+import { Card, CardContent } from "@/components/ui/card";
 
 const Dashboard = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [greeting, setGreeting] = useState("");
 
   const recentItems = [
     { id: 1, name: "Striped T-Shirt", image: "photo-1721322800607-8c38375eef04" },
@@ -27,6 +28,17 @@ const Dashboard = () => {
     return "Good evening";
   };
 
+  useEffect(() => {
+    setGreeting(getTimeBasedGreeting());
+  }, []);
+
+  const quickAccessIcons = [
+    { icon: Shirt, name: "Wardrobe", color: "bg-neon-aqua/20" },
+    { icon: Calendar, name: "Planner", color: "bg-neon-magenta/20" },
+    { icon: Search, name: "Shop", color: "bg-neon-orange/20" },
+    { icon: TrendingUp, name: "Trends", color: "bg-neon-aqua/20" }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-dark">
       {/* AppBar */}
@@ -36,17 +48,17 @@ const Dashboard = () => {
         {/* Greeting */}
         <div>
           <h1 className="font-inter font-medium text-white text-lg">
-            {getTimeBasedGreeting()}, Alex 👋
+            {greeting}, Alex 👋
           </h1>
         </div>
 
         {/* Today's Outfit Card */}
-        <div className="bg-[#1C2436] rounded-xl p-6 border border-[#2A3245] shadow-md">
+        <div className="bg-[#1C2436] rounded-xl p-6 border border-[#2A3245] shadow-md h-[180px]">
           <h2 className="font-poppins font-semibold text-[22px] text-white mb-4">Outfit Idea</h2>
           <div className="flex items-center space-x-4 mb-4">
-            <div className="w-16 h-16 bg-gray-600 rounded-lg overflow-hidden"></div>
-            <div className="w-16 h-16 bg-gray-600 rounded-lg overflow-hidden"></div>
-            <div className="w-16 h-16 bg-gray-600 rounded-lg overflow-hidden"></div>
+            <div className="w-[60px] h-[60px] bg-gray-600 rounded-lg overflow-hidden"></div>
+            <div className="w-[60px] h-[60px] bg-gray-600 rounded-lg overflow-hidden"></div>
+            <div className="w-[60px] h-[60px] bg-gray-600 rounded-lg overflow-hidden"></div>
             <div className="text-white/60 text-2xl">+</div>
           </div>
           <Button className="bg-neon-magenta hover:bg-neon-magenta/90 text-white font-inter font-semibold rounded-full px-6 py-3 transition-all duration-150 hover:shadow-lg active:scale-95">
@@ -95,33 +107,14 @@ const Dashboard = () => {
         <div>
           <h2 className="font-poppins font-semibold text-[22px] text-white mb-4">Quick Access</h2>
           <div className="grid grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-neon-aqua/20 rounded-xl flex items-center justify-center mx-auto mb-2">
-                <Shirt className="w-8 h-8 text-neon-aqua" />
+            {quickAccessIcons.map((item, index) => (
+              <div key={index} className="text-center">
+                <div className={`w-16 h-16 ${item.color} rounded-xl flex items-center justify-center mx-auto mb-2 hover:bg-neon-aqua hover:text-white transition-colors`}>
+                  <item.icon className={`w-8 h-8 ${index === 0 || index === 3 ? 'text-neon-aqua' : index === 1 ? 'text-neon-magenta' : 'text-neon-orange'}`} />
+                </div>
+                <span className="text-white/75 text-sm font-inter font-semibold">{item.name}</span>
               </div>
-              <span className="text-white/75 text-sm font-inter font-semibold">Wardrobe</span>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-neon-magenta/20 rounded-xl flex items-center justify-center mx-auto mb-2">
-                <Calendar className="w-8 h-8 text-neon-magenta" />
-              </div>
-              <span className="text-white/75 text-sm font-inter font-semibold">Planner</span>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-neon-orange/20 rounded-xl flex items-center justify-center mx-auto mb-2">
-                <Search className="w-8 h-8 text-neon-orange" />
-              </div>
-              <span className="text-white/75 text-sm font-inter font-semibold">Shop</span>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-neon-aqua/20 rounded-xl flex items-center justify-center mx-auto mb-2">
-                <TrendingUp className="w-8 h-8 text-neon-aqua" />
-              </div>
-              <span className="text-white/75 text-sm font-inter font-semibold">Trends</span>
-            </div>
+            ))}
           </div>
         </div>
       </div>

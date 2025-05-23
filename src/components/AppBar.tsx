@@ -2,12 +2,16 @@
 import React from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Search, Menu, Mic } from "lucide-react";
+import { Search, Menu, Mic, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface AppBarProps {
   showMenu?: boolean;
   showSearch?: boolean;
   showProfile?: boolean;
+  showBack?: boolean;
+  currentStep?: number;
+  totalSteps?: number;
   onMenuClick?: () => void;
 }
 
@@ -15,8 +19,13 @@ const AppBar: React.FC<AppBarProps> = ({
   showMenu = false, 
   showSearch = false, 
   showProfile = false,
+  showBack = false,
+  currentStep,
+  totalSteps,
   onMenuClick
 }) => {
+  const navigate = useNavigate();
+  
   return (
     <div className="w-full h-14 bg-[#131A2B] shadow-md flex items-center justify-between px-4 sticky top-0 z-50">
       <div className="flex items-center">
@@ -31,7 +40,18 @@ const AppBar: React.FC<AppBarProps> = ({
             <Menu size={24} />
           </Button>
         )}
-        {!showMenu && (
+        {showBack && (
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-11 w-11 text-white/75 hover:text-white hover:bg-[#1C273B]"
+            onClick={() => navigate(-1)}
+            aria-label="Go back"
+          >
+            <ArrowLeft size={24} />
+          </Button>
+        )}
+        {!showMenu && !showBack && (
           <div className="flex items-center h-14">
             <div className="w-8 h-8 bg-gradient-to-r from-neon-orange to-neon-magenta rounded-md" />
             <span className="ml-2 text-gradient font-poppins font-bold text-xl">VibeFit</span>
@@ -58,6 +78,12 @@ const AppBar: React.FC<AppBarProps> = ({
       )}
 
       <div className="flex items-center">
+        {currentStep && totalSteps && (
+          <span className="text-white/70 text-sm mr-4">
+            {currentStep}/{totalSteps}
+          </span>
+        )}
+        
         {showProfile && (
           <Avatar className="border-2 border-transparent hover:border-neon-aqua transition-colors">
             <AvatarFallback className="bg-[#2A3245] text-white">A</AvatarFallback>

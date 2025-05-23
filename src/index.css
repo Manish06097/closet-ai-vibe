@@ -1,5 +1,4 @@
 
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -76,6 +75,33 @@
   /* Add the custom animation class */
   .animate-float {
     animation: float 3s ease-in-out infinite;
+  }
+
+  /* Sidebar menu item styles */
+  .sidebar-menu-item {
+    @apply relative flex items-center w-full px-4 py-3 text-white font-inter text-base rounded-md transition-all duration-150 hover:bg-[#1C273B] hover:text-neon-aqua active:scale-[0.97];
+  }
+
+  .sidebar-menu-item.active {
+    @apply bg-[#1C273B] text-neon-aqua;
+  }
+  
+  .sidebar-menu-item.active::before {
+    @apply content-[''] absolute left-0 top-0 w-1 h-full bg-neon-magenta rounded-r;
+  }
+
+  .sidebar-menu-item:focus-visible {
+    @apply ring-2 ring-neon-aqua outline-none;
+  }
+
+  .sidebar-menu-item .icon {
+    @apply w-6 h-6 mr-3;
+  }
+
+  /* Focus styles for improved accessibility */
+  button:focus-visible,
+  a:focus-visible {
+    @apply ring-2 ring-neon-aqua ring-offset-1 ring-offset-[#131A2B] outline-none;
   }
 }
 

@@ -1,124 +1,69 @@
 
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Menu, Search, Mic } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Search, Menu, Mic } from "lucide-react";
 
 interface AppBarProps {
-  currentStep?: number;
-  totalSteps?: number;
-  showBack?: boolean;
-  onBack?: () => void;
-  showSearch?: boolean;
   showMenu?: boolean;
+  showSearch?: boolean;
   showProfile?: boolean;
-  variant?: "default" | "search"; // Added variant for search-focused mode
+  onMenuClick?: () => void;
 }
 
-const AppBar = ({ 
-  currentStep, 
-  totalSteps, 
-  showBack = false, 
-  onBack,
-  showSearch = false,
-  showMenu = false,
+const AppBar: React.FC<AppBarProps> = ({ 
+  showMenu = false, 
+  showSearch = false, 
   showProfile = false,
-  variant = "default"
-}: AppBarProps) => {
-  const navigate = useNavigate();
-  const [isFocused, setIsFocused] = useState(false);
-
-  const handleBack = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      navigate(-1);
-    }
-  };
-
-  const handleSearchFocus = () => {
-    setIsFocused(true);
-    if (variant === "default") {
-      navigate("/search");
-    }
-  };
-
+  onMenuClick
+}) => {
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-[#131A2B] shadow-md h-[56px]">
-      {/* Left Side */}
-      <div className="flex items-center space-x-4">
-        {showBack && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBack}
-            className="text-white hover:text-neon-aqua"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-        )}
-
+    <div className="w-full h-14 bg-[#131A2B] shadow-md flex items-center justify-between px-4 sticky top-0 z-50">
+      <div className="flex items-center">
         {showMenu && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-white hover:text-neon-aqua min-h-[44px] min-w-[44px]"
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-11 w-11 text-white/75 hover:text-white hover:bg-[#1C273B]"
+            onClick={onMenuClick}
+            aria-label="Open menu"
           >
-            <Menu className="w-6 h-6" />
+            <Menu size={24} />
           </Button>
         )}
-        
-        {!showBack && !showMenu && (
-          <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 bg-gradient-neon rounded-sm"></div>
-            <span className="font-poppins font-bold text-white text-lg">VibeFit</span>
+        {!showMenu && (
+          <div className="flex items-center h-14">
+            <div className="w-8 h-8 bg-gradient-to-r from-neon-orange to-neon-magenta rounded-md" />
+            <span className="ml-2 text-gradient font-poppins font-bold text-xl">VibeFit</span>
           </div>
         )}
       </div>
 
-      {/* Middle - Search Bar */}
       {showSearch && (
-        <div className="relative flex-grow max-w-lg mx-4 md:max-w-[60%]">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-          <Input
-            placeholder="Search your style..."
-            className={cn(
-              "pl-10 pr-12 bg-[#1C2436] border-transparent h-10 rounded-full text-white placeholder:text-gray-400",
-              isFocused ? "border-2 border-neon-aqua shadow-[0_0_8px_rgba(0,229,255,0.5)]" : ""
-            )}
-            onFocus={handleSearchFocus}
-            onBlur={() => setIsFocused(false)}
-          />
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white/60 min-h-[44px] min-w-[44px]"
-          >
-            <Mic className="w-4 h-4" />
-          </Button>
+        <div className="flex-1 max-w-md mx-4">
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+              <Search size={20} className="text-[#CCCCCC]" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search your style..."
+              className="w-full h-10 bg-[#1C2436] text-white rounded-full pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-neon-aqua focus:border-transparent placeholder-[#CCCCCC] font-inter text-base"
+            />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <Mic size={20} className="text-[#CCCCCC]" />
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Right Side */}
-      {showProfile && (
-        <div className="flex items-center">
-          <Avatar className="h-10 w-10 border-2 border-transparent hover:border-neon-aqua transition-colors focus:ring-2 focus:ring-neon-aqua">
-            <AvatarFallback className="bg-neon-magenta/20 text-white">
-              AL
-            </AvatarFallback>
+      <div className="flex items-center">
+        {showProfile && (
+          <Avatar className="border-2 border-transparent hover:border-neon-aqua transition-colors">
+            <AvatarFallback className="bg-[#2A3245] text-white">A</AvatarFallback>
           </Avatar>
-        </div>
-      )}
-
-      {/* Step Indicator */}
-      {currentStep && totalSteps && (
-        <div className="text-white/70 font-inter text-sm">
-          {currentStep} / {totalSteps}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
